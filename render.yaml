@@ -22,9 +22,8 @@ services:
     branch: main
     
     # Build & Start Commands
-    # Use 'npm install' instead of 'npm ci' to ensure devDependencies are installed for build
-    # Set NODE_ENV after build to avoid skipping devDependencies
-    buildCommand: npm install && npm run build
+    # Use 'npm install' to install all dependencies including tsx for runtime
+    buildCommand: npm install
     startCommand: npm start
     
     # Health Check

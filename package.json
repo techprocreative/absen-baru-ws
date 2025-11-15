@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch server/index.ts",
     "build": "vite build && tsc -p tsconfig.build.json",
-    "start": "NODE_ENV=production node dist/server/index.js",
+    "start": "NODE_ENV=production tsx server/index.ts",
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
@@ -116,7 +116,8 @@
     "@types/node": "20.16.11",
     "@types/ws": "^8.5.13",
     "@types/compression": "^1.8.1",
-    "@types/connect-pg-simple": "^7.0.3"
+    "@types/connect-pg-simple": "^7.0.3",
+    "tsx": "^4.20.5"
   },
   "devDependencies": {
     "@replit/vite-plugin-cartographer": "^0.4.2",
@@ -133,7 +134,6 @@
     "drizzle-kit": "^0.31.4",
     "esbuild": "^0.25.0",
     "supertest": "^7.1.4",
-    "tsx": "^4.20.5",
     "vitest": "^2.1.9"
   },
   "optionalDependencies": {
