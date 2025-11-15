@@ -1,28 +1,103 @@
+# =====================================================
+# FACESENSEATTEND - RENDER BLUEPRINT
+# =====================================================
+# Blueprint untuk deployment FaceSenseAttend ke Render
+#
+# Cara menggunakan:
+# 1. Push file ini ke GitHub repository Anda
+# 2. Di Render Dashboard, pilih "New" → "Blueprint"
+# 3. Pilih repository GitHub Anda
+# 4. Render akan mendeteksi file render.yaml ini secara otomatis
+# 5. Set DATABASE_URL saat deployment
+# 6. Deploy!
+# =====================================================
+
 services:
+  # Web Service untuk FaceSenseAttend
   - type: web
     name: facesenseattend
     runtime: node
     region: singapore
     plan: free
-    buildCommand: npm install && npm run build
+    branch: main
+    
+    # Build & Start Commands
+    buildCommand: npm ci && npm run build
     startCommand: npm start
+    
+    # Health Check
     healthCheckPath: /api/health
+    
+    # Auto Deploy
+    autoDeploy: true
+    
+    # Environment Variables
     envVars:
+      # Node Environment
       - key: NODE_ENV
         value: production
+      
+      # Server Configuration
       - key: PORT
-        value: 5000
+        value: 10000
+      
+      # Database (Supabase)
+      # IMPORTANT: Anda harus set ini secara manual di Render Dashboard
+      # Format: postgresql://postgres.PROJECT_ID:PASSWORD@aws-0-REGION.pooler.supabase.com:6543/postgres
       - key: DATABASE_URL
         sync: false
+      
+      # Security Secrets
+      # Auto-generated oleh Render untuk keamanan
       - key: SESSION_SECRET
         generateValue: true
+      
       - key: JWT_SECRET
         generateValue: true
+      
       - key: ENCRYPTION_KEY
         generateValue: true
+      
+      # Logging
       - key: LOG_LEVEL
         value: info
+      
       - key: LOG_DIR
         value: /tmp/logs
+      
+      # CORS Configuration
+      # IMPORTANT: Update ini dengan URL Render Anda setelah deployment
       - key: ALLOWED_ORIGINS
         value: https://facesenseattend.onrender.com
+
+# =====================================================
+# CATATAN PENTING
+# =====================================================
+#
+# 1. DATABASE_URL:
+#    - Dapatkan dari Supabase Dashboard
+#    - Project: oqsezgdlxahrgvxutbyb
+#    - Format: postgresql://postgres.oqsezgdlxahrgvxutbyb:PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
+#    - Ganti PASSWORD dengan password database Supabase Anda
+#
+# 2. ALLOWED_ORIGINS:
+#    - Setelah deployment selesai, dapatkan URL dari Render
+#    - Update value ini dengan URL tersebut
+#    - Trigger manual deploy untuk apply changes
+#
+# 3. Free Plan (Hobby):
+#    - Gratis selamanya
+#    - Service sleep setelah 15 menit tidak aktif
+#    - 750 hours per month
+#    - Good for testing dan small projects
+#    - Upgrade ke Starter ($7/bulan) untuk production jika butuh always-on
+#
+# 4. Health Check:
+#    - Render akan ping /api/health untuk cek status
+#    - Jika gagal, service akan di-restart otomatis
+#
+# 5. Auto Deploy:
+#    - Service akan auto-deploy saat ada push ke branch main
+#    - Bisa diubah ke false jika ingin manual deploy
+#
+# =====================================================
