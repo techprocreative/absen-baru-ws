@@ -35,19 +35,27 @@ import healthRouter from "./routes/health.js";
 console.log('[INDEX] healthRouter imported');
 console.log('[INDEX] All imports complete!');
 
+console.log('[INDEX] Creating Express app...');
 const app = express();
+console.log('[INDEX] Express app created');
 app.set('trust proxy', 1);
+console.log('[INDEX] Trust proxy set');
 
 // Export app for testing
 export { app };
 
 // Enforce HTTPS in production
+console.log('[INDEX] Setting up HTTPS redirect...');
 app.use(httpsRedirect);
+console.log('[INDEX] HTTPS redirect set');
 
 // Security middleware (harus paling awal)
+console.log('[INDEX] Setting up security middleware...');
 setupSecurityMiddleware(app);
+console.log('[INDEX] Security middleware set');
 
 // Body parsers
+console.log('[INDEX] Setting up body parsers...');
 declare module 'http' {
   interface IncomingMessage {
     rawBody: unknown
@@ -61,9 +69,12 @@ app.use(express.json({
   }
 }));
 app.use(express.urlencoded({ extended: false }));
+console.log('[INDEX] Body parsers set');
 
 // Session management
+console.log('[INDEX] Setting up session...');
 app.use(sessionMiddleware);
+console.log('[INDEX] Session set');
 
 // Request logging
 app.use(requestLogger);
