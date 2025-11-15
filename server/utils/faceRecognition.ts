@@ -1,7 +1,7 @@
 import * as faceapi from 'face-api.js';
 import { Canvas, Image, ImageData } from 'canvas';
 import { join } from 'path';
-import { logger } from '../logger';
+import { logger } from '../logger.js';
 
 // Polyfill for face-api.js in Node.js
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData } as any);
