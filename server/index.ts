@@ -104,54 +104,73 @@ console.log('[INDEX] Cleanup job check complete');
 
 console.log('[INDEX] Starting async initialization...');
 (async () => {
-  console.log('[INDEX] Inside async IIFE');
-  const modelCheck = validateModels();
-  if (!modelCheck.valid) {
-    logger.warn('⚠️ Missing face recognition models', { missing: modelCheck.missing });
-    logger.warn('Face recognition features will be disabled until models are loaded.');
-  } else {
-    logger.info('✅ Face recognition model files verified');
-  }
+  try {
+    console.log('[INDEX] Inside async IIFE');
+    
+    console.log('[INDEX] Validating models...');
+    const modelCheck = validateModels();
+    console.log('[INDEX] Models validated:', modelCheck.valid);
+    
+    if (!modelCheck.valid) {
+      logger.warn('⚠️ Missing face recognition models', { missing: modelCheck.missing });
+      logger.warn('Face recognition features will be disabled until models are loaded.');
+    } else {
+      logger.info('✅ Face recognition model files verified');
+    }
 
-  // API routes
-  await registerRoutes(app);
+    // API routes
+    console.log('[INDEX] Registering routes...');
+    await registerRoutes(app);
+    console.log('[INDEX] Routes registered');
 
-  // Load face recognition models asynchronously after server starts
-  if (modelCheck.valid) {
-    logger.info('Initializing face recognition models in background...');
-    loadFaceApiModels()
-      .then(() => {
-        logger.info('✅ Face recognition models ready');
-      })
-      .catch((error) => {
-        logger.error('Failed to load face recognition models:', error);
-        logger.warn('Face recognition features will be unavailable.');
+    // Load face recognition models asynchronously after server starts
+    if (modelCheck.valid) {
+      logger.info('Initializing face recognition models in background...');
+      loadFaceApiModels()
+        .then(() => {
+          logger.info('✅ Face recognition models ready');
+        })
+        .catch((error) => {
+          logger.error('Failed to load face recognition models:', error);
+          logger.warn('Face recognition features will be unavailable.');
+        });
+    }
+
+    console.log('[INDEX] Creating server...');
+    const server = createAppServer(app);
+    console.log('[INDEX] Server created');
+
+    // Setup vite or static serving
+    console.log('[INDEX] Setting up static serving...');
+    if (config.NODE_ENV === "development") {
+      await setupVite(app, server);
+    } else if (config.NODE_ENV === 'production') {
+      serveStatic(app);
+    }
+    console.log('[INDEX] Static serving setup complete');
+
+    // Error handling (harus paling akhir)
+    console.log('[INDEX] Setting up error handler...');
+    app.use(errorHandler);
+    console.log('[INDEX] Error handler set');
+
+    if (config.NODE_ENV !== 'test') {
+      const PORT = config.PORT;
+      console.log('[INDEX] Starting server on port', PORT);
+      server.listen({
+        port: PORT,
+        host: "0.0.0.0",
+        reusePort: true,
+      }, () => {
+        logger.info(`Server running on port ${PORT} in ${config.NODE_ENV} mode`);
+        console.log('[INDEX] Server successfully started!');
       });
-  }
-
-  const server = createAppServer(app);
-
-  // Setup vite or static serving
-  if (config.NODE_ENV === "development") {
-    await setupVite(app, server);
-  } else if (config.NODE_ENV === 'production') {
-    serveStatic(app);
-  }
-
-  // Error handling (harus paling akhir)
-  app.use(errorHandler);
-
-  if (config.NODE_ENV !== 'test') {
-    const PORT = config.PORT;
-    server.listen({
-      port: PORT,
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
-      logger.info(`Server running on port ${PORT} in ${config.NODE_ENV} mode`);
-    });
-  } else {
-    logger.info('Server initialized in test mode');
+    } else {
+      logger.info('Server initialized in test mode');
+    }
+  } catch (error) {
+    console.error('[INDEX] ERROR in async IIFE:', error);
+    throw error;
   }
 })();
 
