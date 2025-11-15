@@ -77,21 +77,34 @@ app.use(sessionMiddleware);
 console.log('[INDEX] Session set');
 
 // Request logging
+console.log('[INDEX] Setting up request logger...');
 app.use(requestLogger);
+console.log('[INDEX] Request logger set');
 
 // Rate limiting
+console.log('[INDEX] Setting up rate limiting...');
 app.use(globalLimiter);
+console.log('[INDEX] Global limiter set');
 app.use('/api', apiLimiter);
+console.log('[INDEX] API limiter set');
 
 // Health routes
+console.log('[INDEX] Setting up health routes...');
 app.use('/api', healthRouter);
+console.log('[INDEX] Health routes set');
 
 // Start scheduled cleanup job (production only)
+console.log('[INDEX] Checking cleanup job...');
 if (config.NODE_ENV === 'production') {
+  console.log('[INDEX] Starting cleanup job...');
   startCleanupJob();
+  console.log('[INDEX] Cleanup job started');
 }
+console.log('[INDEX] Cleanup job check complete');
 
+console.log('[INDEX] Starting async initialization...');
 (async () => {
+  console.log('[INDEX] Inside async IIFE');
   const modelCheck = validateModels();
   if (!modelCheck.valid) {
     logger.warn('⚠️ Missing face recognition models', { missing: modelCheck.missing });
