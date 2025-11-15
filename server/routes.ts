@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { storage } from "./storage.js";
-import { loginSchema, insertUserSchema } from "@shared/schema";
+import { loginSchema, insertUserSchema } from "../shared/schema.js";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { authLimiter } from "./middleware/rateLimiting.js";
