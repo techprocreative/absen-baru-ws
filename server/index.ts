@@ -64,26 +64,27 @@ if (config.NODE_ENV === 'production') {
 (async () => {
   const modelCheck = validateModels();
   if (!modelCheck.valid) {
-    logger.error('❌ Missing face recognition models', { missing: modelCheck.missing });
-    logger.error('Run "npm run download-models" before starting the server.');
-    process.exit(1);
-  }
-
-  logger.info('✅ Face recognition model files verified');
-
-  // Load face recognition models on startup
-  logger.info('Initializing face recognition models...');
-  try {
-    await loadFaceApiModels();
-    logger.info('Face recognition models ready');
-  } catch (error) {
-    logger.error('Failed to load face recognition models:', error);
-    logger.error('Server cannot start without face recognition capabilities. Exiting.');
-    process.exit(1);
+    logger.warn('⚠️ Missing face recognition models', { missing: modelCheck.missing });
+    logger.warn('Face recognition features will be disabled until models are loaded.');
+  } else {
+    logger.info('✅ Face recognition model files verified');
   }
 
   // API routes
   await registerRoutes(app);
+
+  // Load face recognition models asynchronously after server starts
+  if (modelCheck.valid) {
+    logger.info('Initializing face recognition models in background...');
+    loadFaceApiModels()
+      .then(() => {
+        logger.info('✅ Face recognition models ready');
+      })
+      .catch((error) => {
+        logger.error('Failed to load face recognition models:', error);
+        logger.warn('Face recognition features will be unavailable.');
+      });
+  }
 
   const server = createAppServer(app);
 
