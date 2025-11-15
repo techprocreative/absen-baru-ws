@@ -22,7 +22,9 @@ services:
     branch: main
     
     # Build & Start Commands
-    buildCommand: npm ci && npm run build
+    # Use 'npm install' instead of 'npm ci' to ensure devDependencies are installed for build
+    # Set NODE_ENV after build to avoid skipping devDependencies
+    buildCommand: npm install && npm run build
     startCommand: npm start
     
     # Health Check
