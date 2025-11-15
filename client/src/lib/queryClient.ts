@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { fetchAPI } from "@/lib/api";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -16,9 +17,9 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-function getAuthHeaders(): HeadersInit {
+function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("auth_token");
-  const headers: HeadersInit = {};
+  const headers: Record<string, string> = {};
   
   if (token) {
     headers.Authorization = `Bearer ${token}`;
@@ -32,7 +33,7 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<any> {
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     ...getAuthHeaders(),
   };
   
@@ -40,27 +41,11 @@ export async function apiRequest(
     headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(url, {
+  return fetchAPI(url, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
   });
-
-  await throwIfResNotOk(res);
-  
-  // Handle empty responses (204, etc.)
-  const contentType = res.headers.get("content-type");
-  if (contentType && contentType.includes("application/json")) {
-    return await res.json();
-  }
-  
-  // Try to parse as JSON, but return empty object if no content
-  try {
-    return await res.json();
-  } catch {
-    return {};
-  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -74,7 +59,7 @@ export const getQueryFn: <T>(options: {
     // Following TanStack Query conventions:
     // - First element of queryKey array should be the complete URL
     // - Additional elements are for cache segmentation only (not URL construction)
-    const url = Array.isArray(queryKey) ? (queryKey[0] as string) : (queryKey as string);
+    const url = Array.isArray(queryKey) ? String(queryKey[0]) : String(queryKey);
     
     const res = await fetch(url, {
       headers,

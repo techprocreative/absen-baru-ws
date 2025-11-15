@@ -1,0 +1,12 @@
+{
+  "name": "FaceSenseAttend Keep-Alive Ping",
+  "url": "https://facesenseattend.onrender.com/api/ping",
+  "schedule": "*/10 * * * *",
+  "timezone": "Asia/Jakarta",
+  "description": "Ping every 10 minutes to prevent Render free tier sleep",
+  "enabled": true,
+  "notification": {
+    "onFailure": true,
+    "onSuccess": false
+  }
+}

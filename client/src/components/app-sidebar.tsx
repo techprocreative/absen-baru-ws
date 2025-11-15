@@ -1,8 +1,8 @@
-import { 
-  Home, 
-  Users, 
-  Calendar, 
-  BarChart3, 
+import {
+  Home,
+  Users,
+  Calendar,
+  BarChart3,
   Settings,
   LogOut,
   ClipboardList,
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useLocation } from "wouter";
 
 interface AppSidebarProps {
@@ -107,16 +108,19 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               <p className="text-xs text-muted-foreground truncate">{user?.email || "user@example.com"}</p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full" 
-            onClick={onLogout}
-            data-testid="button-logout"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={onLogout}
+              data-testid="button-logout"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>

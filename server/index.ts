@@ -1,81 +1,121 @@
-import express, { type Request, Response, NextFunction } from "express";
+import express from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { setupVite, serveStatic } from "./vite";
+import { config } from "./config";
+import { logger } from "./logger";
+import { sessionMiddleware } from "./session";
+import { setupSecurityMiddleware } from "./middleware/security";
+import { requestLogger } from "./middleware/requestLogger";
+import { errorHandler } from "./middleware/errorHandler";
+import { startCleanupJob } from "./jobs/cleanup";
+import { loadFaceApiModels } from "./utils/faceRecognition";
+import { validateModels } from "./utils/validateModels";
+import { closeDatabaseConnection } from "./db";
+import { httpsRedirect } from "./middleware/httpsRedirect";
+import { globalLimiter, apiLimiter } from "./middleware/rateLimiting";
+import { createAppServer } from "./https";
+import healthRouter from "./routes/health";
 
 const app = express();
+app.set('trust proxy', 1);
 
+// Export app for testing
+export { app };
+
+// Enforce HTTPS in production
+app.use(httpsRedirect);
+
+// Security middleware (harus paling awal)
+setupSecurityMiddleware(app);
+
+// Body parsers
 declare module 'http' {
   interface IncomingMessage {
     rawBody: unknown
   }
 }
-app.use(express.json({
+
+app.use(express.json({ 
+  limit: '10mb',
   verify: (req, _res, buf) => {
     req.rawBody = buf;
   }
 }));
 app.use(express.urlencoded({ extended: false }));
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+// Session management
+app.use(sessionMiddleware);
 
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
+// Request logging
+app.use(requestLogger);
 
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
+// Rate limiting
+app.use(globalLimiter);
+app.use('/api', apiLimiter);
 
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
+// Health routes
+app.use('/api', healthRouter);
 
-      log(logLine);
-    }
-  });
-
-  next();
-});
+// Start scheduled cleanup job (production only)
+if (config.NODE_ENV === 'production') {
+  startCleanupJob();
+}
 
 (async () => {
-  const server = await registerRoutes(app);
+  const modelCheck = validateModels();
+  if (!modelCheck.valid) {
+    logger.error('❌ Missing face recognition models', { missing: modelCheck.missing });
+    logger.error('Run "npm run download-models" before starting the server.');
+    process.exit(1);
+  }
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+  logger.info('✅ Face recognition model files verified');
 
-    res.status(status).json({ message });
-    throw err;
-  });
+  // Load face recognition models on startup
+  logger.info('Initializing face recognition models...');
+  try {
+    await loadFaceApiModels();
+    logger.info('Face recognition models ready');
+  } catch (error) {
+    logger.error('Failed to load face recognition models:', error);
+    logger.error('Server cannot start without face recognition capabilities. Exiting.');
+    process.exit(1);
+  }
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
+  // API routes
+  await registerRoutes(app);
+
+  const server = createAppServer(app);
+
+  // Setup vite or static serving
+  if (config.NODE_ENV === "development") {
     await setupVite(app, server);
-  } else {
+  } else if (config.NODE_ENV === 'production') {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  // Error handling (harus paling akhir)
+  app.use(errorHandler);
+
+  if (config.NODE_ENV !== 'test') {
+    const PORT = config.PORT;
+    server.listen({
+      port: PORT,
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      logger.info(`Server running on port ${PORT} in ${config.NODE_ENV} mode`);
+    });
+  } else {
+    logger.info('Server initialized in test mode');
+  }
 })();
+
+const shutdown = async () => {
+  logger.info('Shutting down gracefully...');
+  await closeDatabaseConnection();
+  process.exit(0);
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);

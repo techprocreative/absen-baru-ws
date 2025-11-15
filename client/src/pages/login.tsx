@@ -6,16 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { UserCheck } from "lucide-react";
 import { useLocation } from "wouter";
+import { useErrorHandler } from "@/hooks/use-error-handler";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { handleError } = useErrorHandler();
+  const { toast } = useToast();
 
   const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -47,13 +49,7 @@ export default function Login() {
         setLocation("/employee");
       }
     },
-    onError: (error: any) => {
-      toast({
-        title: "Login failed",
-        description: error.message || "Invalid email or password",
-        variant: "destructive",
-      });
-    },
+    onError: handleError,
   });
 
   const onSubmit = (data: LoginData) => {

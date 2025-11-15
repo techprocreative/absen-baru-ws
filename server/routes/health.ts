@@ -1,0 +1,57 @@
+import { Router } from 'express';
+import os from 'os';
+import { checkDatabaseHealth } from '../db';
+import { validateModels } from '../utils/validateModels';
+import { logger } from '../logger';
+
+const router = Router();
+
+router.get('/ping', (_req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+router.get('/health', async (_req, res) => {
+  try {
+    const start = Date.now();
+    const dbHealthy = await checkDatabaseHealth();
+    const modelCheck = validateModels();
+    const memUsage = process.memoryUsage();
+
+    const health = {
+      status: dbHealthy && modelCheck.valid ? 'healthy' : 'unhealthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      version: process.env.npm_package_version || '1.0.0',
+      checks: {
+        database: dbHealthy,
+        models: modelCheck.valid,
+        memory: {
+          used: memUsage.heapUsed,
+          rss: memUsage.rss,
+          total: os.totalmem(),
+          free: os.freemem(),
+        },
+      },
+    };
+
+    res.setHeader('X-Response-Time', `${Date.now() - start}ms`);
+    res.status(health.status === 'healthy' ? 200 : 503).json(health);
+  } catch (error) {
+    logger.error('Health check failed:', error);
+    res.status(503).json({
+      status: 'unhealthy',
+      error: 'Health check failed',
+    });
+  }
+});
+
+router.get('/ready', async (_req, res) => {
+  const ready = await checkDatabaseHealth() && validateModels().valid;
+  res.status(ready ? 200 : 503).json({ ready });
+});
+
+router.get('/live', (_req, res) => {
+  res.status(200).json({ alive: true });
+});
+
+export default router;

@@ -4,3 +4,16 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Logs
+logs/
+*.log
+backups/
+coverage/
+
+# Environment variables
+.env
+
+# Face recognition models (downloaded at build time)
+public/models/*
+!public/models/.gitkeep

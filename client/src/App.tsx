@@ -5,13 +5,16 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { ThemeProvider } from "@/components/theme-provider";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
+import EmployeeKiosk from "@/pages/employee-kiosk";
 import EmployeeDashboard from "@/pages/employee/dashboard";
 import AdminDashboard from "@/pages/admin/dashboard";
 import EmployeesPage from "@/pages/admin/employees";
 import HRDashboard from "@/pages/hr/dashboard";
 import type { User } from "@shared/schema";
+import { LoadingSpinner } from "@/components/loading-spinner";
 
 function AuthenticatedLayout({ children, user }: { children: React.ReactNode, user: User }) {
   const handleLogout = async () => {
@@ -36,7 +39,7 @@ function AuthenticatedLayout({ children, user }: { children: React.ReactNode, us
   return (
     <SidebarProvider style={style as React.CSSProperties}>
       <div className="flex h-screen w-full">
-        <AppSidebar user={user} onLogout={handleLogout} />
+        <AppSidebar user={{ ...user, photoUrl: user.photoUrl ?? undefined }} onLogout={handleLogout} />
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between p-4 border-b bg-background">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
@@ -73,10 +76,7 @@ function ProtectedRoute({
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+        <LoadingSpinner message="Loading..." />
       </div>
     );
   }
@@ -99,7 +99,12 @@ function ProtectedRoute({
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Login} />
+      {/* Employee Kiosk - Public Access (Default Landing Page) */}
+      <Route path="/" component={EmployeeKiosk} />
+      <Route path="/kiosk" component={EmployeeKiosk} />
+      
+      {/* Login Route for Staff */}
+      <Route path="/login" component={Login} />
       
       {/* Employee Routes */}
       <Route path="/employee">
@@ -152,10 +157,12 @@ function Router() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <ThemeProvider defaultTheme="system" storageKey="attendance-ui-theme">
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

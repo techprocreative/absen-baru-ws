@@ -1,0 +1,10 @@
+DROP INDEX IF EXISTS idx_attendance_user_date;
+DROP INDEX IF EXISTS idx_attendance_guest_date;
+DROP INDEX IF EXISTS idx_attendance_date;
+DROP INDEX IF EXISTS idx_guests_email;
+DROP INDEX IF EXISTS idx_guests_expires_at;
+DROP INDEX IF EXISTS idx_guests_token;
+DROP INDEX IF EXISTS idx_users_email;
+DROP INDEX IF EXISTS idx_users_employee_id;
+DROP INDEX IF EXISTS idx_users_department;
+DROP INDEX IF EXISTS idx_guests_cleanup;

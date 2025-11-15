@@ -81,8 +81,8 @@ export default function EmployeeDashboard() {
   const lateDays = attendanceRecords.filter(r => r.status === "late").length;
   const totalHours = attendanceRecords.reduce((sum, r) => sum + (r.hoursWorked || 0), 0);
 
-  const hasCheckedIn = todayAttendance?.checkInTime;
-  const hasCheckedOut = todayAttendance?.checkOutTime;
+  const hasCheckedIn = !!todayAttendance?.checkInTime;
+  const hasCheckedOut = !!todayAttendance?.checkOutTime;
 
   return (
     <div className="space-y-6">
