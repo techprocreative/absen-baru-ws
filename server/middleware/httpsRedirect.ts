@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { config } from '../config';
+import { config } from '../config.js';
 
 export function httpsRedirect(req: Request, res: Response, next: NextFunction) {
   if (config.NODE_ENV !== 'production') {

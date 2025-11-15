@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodSchema } from 'zod';
-import { AppError } from './errorHandler';
+import { AppError } from './errorHandler.js';
 
 function sanitizeString(value: string): string {
   return value

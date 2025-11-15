@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "@shared/schema";
 import * as dotenv from 'dotenv';
-import { logger } from './logger';
+import { logger } from './logger.js';
 
 // Load environment variables
 dotenv.config();

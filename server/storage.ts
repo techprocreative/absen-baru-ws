@@ -12,7 +12,7 @@ import {
   type Guest,
   type InsertGuest
 } from "@shared/schema";
-import { db } from "./db";
+import { db } from "./db.js";
 import { eq, and, desc, sql } from "drizzle-orm";
 
 export interface IStorage {

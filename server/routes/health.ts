@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import os from 'os';
-import { checkDatabaseHealth } from '../db';
-import { validateModels } from '../utils/validateModels';
-import { logger } from '../logger';
+import { checkDatabaseHealth } from '../db.js';
+import { validateModels } from '../utils/validateModels.js';
+import { logger } from '../logger.js';
 
 const router = Router();
 

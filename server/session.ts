@@ -1,8 +1,8 @@
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import crypto from 'crypto';
-import { pool } from './db';
-import { config } from './config';
+import { pool } from './db.js';
+import { config } from './config.js';
 
 const PgSession = connectPgSimple(session as any);
 

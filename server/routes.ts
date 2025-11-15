@@ -1,13 +1,13 @@
 import type { Express } from "express";
-import { storage } from "./storage";
+import { storage } from "./storage.js";
 import { loginSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { authLimiter } from "./middleware/rateLimiting";
-import { logAudit } from "./logger";
-import { AppError, asyncHandler } from "./middleware/errorHandler";
-import { validateBody } from "./middleware/validation";
-import { regenerateSession } from "./session";
+import { authLimiter } from "./middleware/rateLimiting.js";
+import { logAudit } from "./logger.js";
+import { AppError, asyncHandler } from "./middleware/errorHandler.js";
+import { validateBody } from "./middleware/validation.js";
+import { regenerateSession } from "./session.js";
 
 
 // Simple in-memory session storage

@@ -2,8 +2,8 @@ import http from 'http';
 import https from 'https';
 import fs from 'fs';
 import type { Express } from 'express';
-import { logger } from './logger';
-import { config } from './config';
+import { logger } from './logger.js';
+import { config } from './config.js';
 
 export type NodeServer = http.Server | https.Server;
 

@@ -1,6 +1,6 @@
 import cron from 'node-cron';
-import { storage } from '../storage';
-import { logger } from '../logger';
+import { storage } from '../storage.js';
+import { logger } from '../logger.js';
 
 // Run cleanup daily at 2 AM
 export function startCleanupJob() {

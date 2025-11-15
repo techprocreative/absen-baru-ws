@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
-import { logger } from '../logger';
+import { logger } from '../logger.js';
 
 const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
 const isDevelopment = process.env.NODE_ENV !== 'production';

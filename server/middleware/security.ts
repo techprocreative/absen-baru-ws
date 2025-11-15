@@ -1,6 +1,6 @@
 import helmet from 'helmet';
 import type { Express } from 'express';
-import { config } from '../config';
+import { config } from '../config.js';
 
 export function setupSecurityMiddleware(app: Express) {
   app.disable('x-powered-by');

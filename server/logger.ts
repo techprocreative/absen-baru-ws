@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
-import { config } from './config';
+import { config } from './config.js';
 
 const logDir = path.resolve(process.cwd(), config.LOG_DIR);
 if (!fs.existsSync(logDir)) {
