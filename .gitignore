@@ -14,6 +14,8 @@ coverage/
 # Environment variables
 .env
 
-# Face recognition models (downloaded at build time)
-public/models/*
-!public/models/.gitkeep
+# Face recognition models
+# Models are committed to avoid download issues in production
+# Uncomment below to exclude models from Git (and download at build time)
+# public/models/*
+# !public/models/.gitkeep
