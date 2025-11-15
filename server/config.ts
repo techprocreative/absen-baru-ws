@@ -1,7 +1,10 @@
+console.log('[CONFIG] Starting config initialization...');
 import { z } from 'zod';
 import * as dotenv from 'dotenv';
 
+console.log('[CONFIG] Loading dotenv...');
 dotenv.config();
+console.log('[CONFIG] Dotenv loaded');
 
 const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
 
@@ -40,5 +43,17 @@ const envSchema = z.object({
   SESSION_COOKIE_DOMAIN: z.string().optional(),
 });
 
-export const config = envSchema.parse(process.env);
 export type Config = z.infer<typeof envSchema>;
+
+console.log('[CONFIG] Parsing environment variables...');
+let config: Config;
+try {
+  config = envSchema.parse(process.env);
+  console.log('[CONFIG] Config parsed successfully');
+} catch (error) {
+  console.error('[CONFIG] Failed to parse environment variables:');
+  console.error(error);
+  throw error;
+}
+
+export { config };
